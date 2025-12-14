@@ -1,0 +1,73 @@
+package smarthome;
+
+public class AutomationRule {
+
+    private final String id;
+    private String name;
+    private String triggerDeviceId;
+    private String triggerCondition;   // e.g. "motion_detected", "over_temperature"
+    private String actionDeviceId;
+    private String action;             // e.g. "turn_on", "turn_off"
+    private boolean enabled;
+
+    public AutomationRule(String id,
+                          String name,
+                          String triggerDeviceId,
+                          String triggerCondition,
+                          String actionDeviceId,
+                          String action) {
+
+        this.id = id;
+        this.name = name;
+        this.triggerDeviceId = triggerDeviceId;
+        this.triggerCondition = triggerCondition;
+        this.actionDeviceId = actionDeviceId;
+        this.action = action;
+        this.enabled = true;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getTriggerDeviceId() {
+        return triggerDeviceId;
+    }
+
+    public String getTriggerCondition() {
+        return triggerCondition;
+    }
+
+    public String getActionDeviceId() {
+        return actionDeviceId;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Rule: %s | IF %s on %s THEN %s on %s | %s",
+                name,
+                triggerCondition,
+                triggerDeviceId,
+                action,
+                actionDeviceId,
+                enabled ? "ENABLED" : "DISABLED"
+        );
+    }
+}
