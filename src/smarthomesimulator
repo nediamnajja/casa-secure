@@ -1,0 +1,126 @@
+package smarthome;
+
+import java.util.Scanner;
+
+public class SmartHomeSimulator {
+
+    public static void main(String[] args) {
+        Home home = new Home("CasaSecure", "Rue Mohamed 5,");
+        DeviceController controller = new DeviceController(home);
+
+        // Create rooms
+        Room livingRoom = new Room("room1", "Living Room");
+        Room bedroom = new Room("room2", "Bedroom");
+        home.addRoom(livingRoom);
+        home.addRoom(bedroom);
+
+        // Add some devices
+        Light light1 = new Light("d1", "Living Room Light", "room1");
+        SmartTV tv1 = new SmartTV("d2", "Living Room TV", "room1");
+        Thermostat thermostat = new Thermostat("d3", "Main Thermostat", "hall");
+        MotionSensor motionSensor = new MotionSensor("d4", "Hallway Motion Sensor", "hall");
+
+        livingRoom.addDevice(light1);
+        livingRoom.addDevice(tv1);
+        bedroom.addDevice(thermostat);
+        bedroom.addDevice(motionSensor);
+
+        // Example automation: IF motion_detected on d4 THEN turn_on on d1
+        AutomationRule rule = new AutomationRule(
+                "r1",
+                "Hall Motion turns on Living Room Light",
+                "d4",
+                "motion_detected",
+                "d1",
+                "turn_on"
+        );
+        controller.addRule(rule);
+
+        runMenu(controller, motionSensor);
+    }
+
+    private static void runMenu(DeviceController controller, MotionSensor motionSensor) {
+        Scanner scanner = new Scanner(System.in);
+        boolean running = true;
+
+        while (running) {
+            System.out.println("\n==== SMART HOME MENU ====");
+            System.out.println("1. Show home status");
+            System.out.println("2. List all devices");
+            System.out.println("3. Turn device ON");
+            System.out.println("4. Turn device OFF");
+            System.out.println("5. Control device");
+            System.out.println("6. Simulate motion detection");
+            System.out.println("7. Show automation rules");
+            System.out.println("0. Exit");
+            System.out.print("Choose option: ");
+
+            String choice = scanner.nextLine();
+
+            try {
+                switch (choice) {
+                    case "1":
+                        controller.getHome().showFullStatus();
+                        break;
+                    case "2":
+                        controller.listAllDevices();
+                        break;
+                    case "3":
+                        System.out.print("Enter device ID: ");
+                        controller.executeOnDevice(scanner.nextLine(), "turn_on", null);
+                        break;
+                    case "4":
+                        System.out.print("Enter device ID: ");
+                        controller.executeOnDevice(scanner.nextLine(), "turn_off", null);
+                        break;
+                    case "5":
+                        System.out.print("Enter device ID: ");
+                        String devId = scanner.nextLine();
+                        System.out.print("Enter command (e.g., brightness, color, volume, temperature): ");
+                        String cmd = scanner.nextLine();
+                        System.out.print("Enter value (string or number): ");
+                        String val = scanner.nextLine();
+                        Object valueObj = parseValue(val);
+                        controller.executeOnDevice(devId, cmd, valueObj);
+                        break;
+                    case "6":
+                        // Simulate motion on the sensor
+                        motionSensor.detectMotion();
+                        controller.handleEvent(motionSensor.getId(), "motion_detected");
+                        break;
+                    case "7":
+                        System.out.println("\n--- Automation Rules ---");
+                        for (AutomationRule r : controller.getRules()) {
+                            System.out.println(r);
+                        }
+                        break;
+                    case "0":
+                        running = false;
+                        break;
+                    default:
+                        System.out.println("Invalid choice.");
+                }
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+        }
+
+        scanner.close();
+        System.out.println("Exiting Smart Home Simulator.");
+    }
+
+    private static Object parseValue(String input) {
+        // Try integer
+        try {
+            return Integer.valueOf(input);
+        } catch (NumberFormatException ignored) {}
+
+        // Try double
+        try {
+            return Double.valueOf(input);
+        } catch (NumberFormatException ignored) {}
+
+        // fallback to string
+        return input;
+    }
+}
